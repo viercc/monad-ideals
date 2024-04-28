@@ -2,13 +2,16 @@ cabal-version:      3.0
 name:               monad-ideals
 version:            0.1.0.0
 
-synopsis: Ideal Monads and coproduct of ideal monads
+synopsis:           Ideal Monads and coproduct of them
+description:
+  Type class to represent ideal monads in terms of the
+  "ideal part" of ideal monads. See README for more.
 
 license:            BSD-3-Clause
 license-file:       LICENSE
 author:             Koji Miyazato
 maintainer:         viercc@gmail.com
-
+homepage:           https://github.com/viercc/monad-ideals
 copyright: Copyright (C) 2008 Edward A. Kmett, 
            Copyright (C) 2004--2008 Dave Menendez, 
            Copyright (C) 2007 Iavor Diatchki
@@ -18,6 +21,11 @@ category:           Control
 build-type:         Simple
 
 extra-doc-files:    CHANGELOG.md, README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/viercc/monad-ideals.git
+  branch:   main
 
 common warnings
     ghc-options: -Wall
