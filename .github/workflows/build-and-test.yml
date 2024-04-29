@@ -33,7 +33,7 @@ jobs:
         uses: actions/cache/restore@v4
         id: restore-compiler-cache
         with:
-          key: env-${{ matrix.os }}-ghc-${{ matrix.ghc }}
+          key: env-${{ runner.os }}-ghc-${{ matrix.ghc }}
           path: |
             ~/.ghcup
 
@@ -46,22 +46,24 @@ jobs:
         with:
           path: |
             ~/.ghcup
-          key: ${{ steps.restore-compiler-cache.outputs.cache-primary-key }} }}
+          key: ${{ steps.restore-compiler-cache.outputs.cache-primary-key }}
       
       - name: Restore build and dependency cache
         uses: actions/cache/restore@v4
         id: restore-build-cache
         with:
-          key: build-${{ matrix.os }}-${{ matrix.ghc }}-${{ hashFiles(env.project-cabal-file) }}
+          key: build-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles(env.project-cabal-file) }}
           restore-keys: |
-            build-${{ matrix.os }}-${{ matrix.ghc }}-
+            build-${{ runner.os }}-${{ matrix.ghc }}-
           path: |
             ~/.cabal/packages
             ~/.cabal/store
             dist-newstyle
 
       - name: Build dependencies
-        run: cabal v2-build all --enable-tests --only-dependencies
+        run: |
+          cabal update
+          cabal v2-build all --enable-tests --only-dependencies
       
       - name: Build
         run: cabal v2-build all --enable-tests
