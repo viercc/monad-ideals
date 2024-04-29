@@ -1,4 +1,6 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Control.Functor.Internal.Mutual
@@ -13,6 +15,9 @@ module Control.Functor.Internal.Mutual where
 import Data.Bifunctor
 
 newtype Mutual p m n a = Mutual {runMutual :: m (p a (Mutual p n m a))}
+
+deriving instance (Eq (m (p a (Mutual p n m a))), Eq (n (p a (Mutual p m n a)))) => Eq (Mutual p n m a)
+deriving instance (Show (m (p a (Mutual p n m a))), Show (n (p a (Mutual p m n a)))) => Show (Mutual p n m a)
 
 instance (Bifunctor p, Functor m, Functor n) => Functor (Mutual p m n) where
   fmap f = Mutual . fmap (bimap f (fmap f)) . runMutual

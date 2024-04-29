@@ -1,5 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Control.Monad.Coproduct
@@ -71,6 +73,17 @@ import Data.Bifunctor (Bifunctor(..))
 -- @
 -- 
 newtype (:+) m0 n0 a = Coproduct { runCoproduct :: Either (Mutual Either m0 n0 a) (Mutual Either n0 m0 a) }
+
+deriving instance
+  (
+    Eq (m0 (Either a (Mutual Either n0 m0 a))),
+    Eq (n0 (Either a (Mutual Either m0 n0 a)))
+  ) => Eq ((:+) m0 n0 a)
+deriving instance
+  (
+    Show (m0 (Either a (Mutual Either n0 m0 a))),
+    Show (n0 (Either a (Mutual Either m0 n0 a)))
+  ) => Show ((:+) m0 n0 a)
 
 inject1 :: (Functor m0) => m0 a -> (m0 :+ n0) a
 inject1 = Coproduct . Left . Mutual . fmap Left
