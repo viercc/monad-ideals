@@ -29,10 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build tool setup
-        run: |
-            ghcup install ghc ${{ matrix.ghc }} --set
-            ghcup install cabal latest --set
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2.7.1
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: '3.10'
       
       - name: Restore build and dependency cache
         uses: actions/cache/restore@v4
@@ -49,9 +50,9 @@ jobs:
       
       - name: (debug) ls cache dir
         run: |
-          ls ~/.config/cabal/ || echo ":P)"
-          ls ~/.cabal/packages/hackage.haskell.org/ || echo ":P)"
+          echo "---- global cache ----"
           ls ~/.cabal/store/ghc-${{ matrix.ghc }}/ || echo ":P)"
+          echo "---- local cache ----"
           ls dist-newstyle/packagedb/ghc-${{ matrix.ghc }}/ || echo ":P)"
       
       - name: Build dependencies
@@ -67,11 +68,11 @@ jobs:
 
       - name: (debug) ls cache dir
         run: |
-          ls ~/.cabal/ || echo ":P)"
-          ls ~/.cabal/packages/hackage.haskell.org/ || echo ":P)"
+          echo "---- global cache ----"
           ls ~/.cabal/store/ghc-${{ matrix.ghc }}/ || echo ":P)"
+          echo "---- local cache ----"
           ls dist-newstyle/packagedb/ghc-${{ matrix.ghc }}/ || echo ":P)"
-        
+      
       - uses: actions/cache/save@v4
         if: always()
         with:
