@@ -29,24 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore compiler cache
-        uses: actions/cache/restore@v4
-        id: restore-compiler-cache
-        with:
-          key: env-${{ runner.os }}-ghc-${{ matrix.ghc }}
-          path: |
-            ~/.ghcup
-
       - name: Build tool setup
         run: |
             ghcup install ghc ${{ matrix.ghc }} --set
             ghcup install cabal latest --set
-      
-      - uses: actions/cache/save@v4
-        with:
-          path: |
-            ~/.ghcup
-          key: ${{ steps.restore-compiler-cache.outputs.cache-primary-key }}
       
       - name: Restore build and dependency cache
         uses: actions/cache/restore@v4
