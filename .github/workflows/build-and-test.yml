@@ -2,6 +2,10 @@ name: Build and Test
 on:
   push:
     branches: [ main ]
+
+env:
+  project-cabal-file: monad-ideals.cabal
+
 jobs:
   generate-matrix:
     name: "Generate matrix from cabal"
@@ -13,7 +17,7 @@ jobs:
         id: set-matrix
         uses: kleidukos/get-tested@v0.1.7.0
         with:
-          cabal-file: monad-ideals.cabal
+          cabal-file: ${{ env.project-cabal-file }}
           ubuntu-version: "latest"
           version: 0.1.7.0
   tests:
@@ -23,4 +27,53 @@ jobs:
     strategy:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
-      - run: echo stub
+      - uses: actions/checkout@v4
+
+      - name: Restore compiler cache
+        uses: actions/cache/restore@v4
+        id: restore-compiler-cache
+        with:
+          key: env-${{ matrix.os }}-ghc-${{ matrix.ghc }}
+          path: |
+            ~/.ghcup
+
+      - name: Build tool setup
+        run: |
+            ghcup install ghc ${{ matrix.ghc }} --set
+            ghcup install cabal latest --set
+      
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.ghcup
+          key: ${{ steps.restore-compiler-cache.outputs.cache-primary-key }} }}
+      
+      - name: Restore build and dependency cache
+        uses: actions/cache/restore@v4
+        id: restore-build-cache
+        with:
+          key: build-${{ matrix.os }}-${{ matrix.ghc }}-${{ hashFiles(env.project-cabal-file) }}
+          restore-keys: |
+            build-${{ matrix.os }}-${{ matrix.ghc }}-
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            dist-newstyle
+
+      - name: Build dependencies
+        run: cabal v2-build all --enable-tests --only-dependencies
+      
+      - name: Build
+        run: cabal v2-build all --enable-tests
+      
+      - name: Run test
+        run: cabal v2-test all
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            dist-newstyle
