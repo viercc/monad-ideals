@@ -49,7 +49,7 @@ jobs:
       
       - name: (debug) ls cache dir
         run: |
-          ls ~/.cabal/ || echo ":P)"
+          ls ~/.config/cabal/ || echo ":P)"
           ls ~/.cabal/packages/hackage.haskell.org/ || echo ":P)"
           ls ~/.cabal/store/ghc-${{ matrix.ghc }}/ || echo ":P)"
           ls dist-newstyle/packagedb/ghc-${{ matrix.ghc }}/ || echo ":P)"
