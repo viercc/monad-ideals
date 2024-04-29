@@ -38,14 +38,22 @@ jobs:
         uses: actions/cache/restore@v4
         id: restore-build-cache
         with:
-          key: build-${{ runner.os }}-${{ matrix.ghc }}-${{ hashFiles(env.project-cabal-file) }}
+          key: build-${{ matrix.os }}-${{ matrix.ghc }}-${{ hashFiles(env.project-cabal-file) }}
           restore-keys: |
-            build-${{ runner.os }}-${{ matrix.ghc }}-
+            build-${{ matrix.os }}-${{ matrix.ghc }}-
           path: |
+            ~/.cabal/config
             ~/.cabal/packages
             ~/.cabal/store
             dist-newstyle
-
+      
+      - name: (debug) ls cache dir
+        run: |
+          ls ~/.cabal/ || echo ":P)"
+          ls ~/.cabal/packages/hackage.haskell.org/ || echo ":P)"
+          ls ~/.cabal/store/ghc-${{ matrix.ghc }}/ || echo ":P)"
+          ls dist-newstyle/packagedb/ghc-${{ matrix.ghc }}/ || echo ":P)"
+      
       - name: Build dependencies
         run: |
           cabal update
@@ -57,11 +65,19 @@ jobs:
       - name: Run test
         run: cabal v2-test all
 
+      - name: (debug) ls cache dir
+        run: |
+          ls ~/.cabal/ || echo ":P)"
+          ls ~/.cabal/packages/hackage.haskell.org/ || echo ":P)"
+          ls ~/.cabal/store/ghc-${{ matrix.ghc }}/ || echo ":P)"
+          ls dist-newstyle/packagedb/ghc-${{ matrix.ghc }}/ || echo ":P)"
+        
       - uses: actions/cache/save@v4
         if: always()
         with:
           key: ${{ steps.restore-build-cache.outputs.cache-primary-key }}
           path: |
+            ~/.cabal/config
             ~/.cabal/packages
             ~/.cabal/store
             dist-newstyle
