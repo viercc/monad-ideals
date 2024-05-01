@@ -31,7 +31,7 @@ import Data.Bifunctor (Bifunctor(..))
 
 -- * Coproduct of Monads
 
--- | Coproduct of (impure parts of) two Monads.
+-- | Coproduct of impure parts of two `Monad`s.
 -- 
 -- === As the coproduct of 'Isolated'
 -- 

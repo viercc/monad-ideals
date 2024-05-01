@@ -5,7 +5,7 @@ Revives `Control.Monad.Ideal` from old versions of [category-extras](https://hac
 ## Ideal Monads
 
 Ideal monads[^1] are certain kind of monads. Informally, an ideal monad `M`
-is a `Monad` which can be written as a disjoint union of "pure" value and "impure" value,
+is a `Monad` which can be written as a disjoint union of "pure" values and "impure" values,
 and its `join` operation on "impure" values never produces "pure" values.
 
 [^1]: N. Ghani and T. Uustalu, [“Coproducts of ideal monads,”](http://www.numdam.org/article/ITA_2004__38_4_321_0.pdf) Theoret. Inform. and Appl., vol. 38, pp. 321–342, 2004.
@@ -34,7 +34,7 @@ satisfying these two properties.
 - `either id (iso . Right . idealize) . iso⁻¹ === join :: m (m a) -> m a`
 
 This package provides `MonadIdeal`, a type class to represent ideal monads in terms of
-its ideal part `m₀` (, instead of a subclass of `Monad` to represent ideal monad itself.)
+its ideal part `m₀` (instead of a subclass of `Monad` to represent ideal monad itself.)
 
 ```haskell
 class (Isolated m0, Bind m0) => MonadIdeal m0 where
@@ -53,11 +53,11 @@ Here, `Ideal m0` corresponds to the ideal monad which would have `m0` as its ide
 
 ## `Isolated` class
 
-There is a generalization to ideal monads which is almost ideal monads
-but lacks a condition that says "an impure value does not become a pure value by `join`."
+There is a generalization to ideal monads, which are almost ideal monads,
+but lack a condition that says "an impure value does not become a pure value by the `join` operation".
 
 A monad `m` in this class has natural isomorphism `Either a (m₀ a) -> m a` with some functor `m₀`, and
-`pure` is the part of `m` which is not `m₀`.
+`pure` is the part of `m` which is not `m₀`. Formally, the defining data of this class are:
 
 - `Functor m₀`, called the impure part of `m`
 - Natural isomorphism `iso :: ∀a. Either a (m₀ a) -> m a` (and its inverse `iso⁻¹ :: ∀a. m a -> Either a (m₀ a)`)
@@ -87,7 +87,7 @@ class Functor m0 => Isolated m0 where
 
 ## Coproduct of monads
 
-Coproduct `m ⊕ n` of two monads[^2] `m, n` is the (category-theoretic) coproduct in the category of monad
+Coproduct `m ⊕ n` of two monads[^2] `m, n` is the coproduct (category-theoretic sum) in the category of monad
 and [monad morphisms](https://hackage.haskell.org/package/mmorph-1.2.0/docs/Control-Monad-Morph.html). [^3]
 
 In basic terms, `m ⊕ n` is a monad with the following functions and properties.
@@ -100,11 +100,14 @@ In basic terms, `m ⊕ n` is a monad with the following functions and properties
   eitherMonad :: (∀a. m a -> t a) -> (∀a. n a -> t a) -> (∀a. (m ⊕ n) a -> t a)
   ```
 
-- Given arbitrary monads `m, n, t` and monad morphisms `f1 :: ∀a. m a -> t a` and `f2 :: ∀a. n a -> t a`,
+- Given arbitrary monads `m, n, t`,
 
-  - `eitherMonad f1 f2 . inject1 = f1`
-  - `eitherMonad f1 f2 . inject2 = f2`
-  - Any monad morphism `f :: ∀a. (m ⊕ n) a -> t a` equals to `eitherMonad f1 f2` for some unique `f1, f2`.
+  - For all monad morphisms `f1` and `f2`,
+
+    - `eitherMonad f1 f2 . inject1 = f1`
+    - `eitherMonad f1 f2 . inject2 = f2`
+
+  - For any monad morphism `f :: ∀a. (m ⊕ n) a -> t a`, `f` equals to `eitherMonad f1 f2` for some unique `f1, f2`.
     Or, equvalently, `f = eitherMonad (f . inject1) (f . inject2)`.
 
 Coproduct of two monads does not always exist, but for ideal monads or monads with `Isolated` impure parts,
@@ -130,3 +133,5 @@ Using this type constructor, coproduct of monad can be constructed in two ways.
 ## Duals
 
 This package also provides the duals of ideal monads and coproducts of them: _Coideal comonads_ and _products_ of them.
+
+--------

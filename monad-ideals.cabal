@@ -14,7 +14,7 @@ maintainer:         viercc@gmail.com
 homepage:           https://github.com/viercc/monad-ideals
 copyright: Copyright (C) 2008 Edward A. Kmett, 
            Copyright (C) 2004--2008 Dave Menendez, 
-           Copyright (C) 2007 Iavor Diatchki
+           Copyright (C) 2007 Iavor Diatchki,
            Copyright (C) 2024 Koji Miyazato
 
 category:           Control

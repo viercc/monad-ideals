@@ -35,10 +35,9 @@ import Data.Semigroup.Traversable.Class (Bitraversable1(..))
 -- instance (Semigroup c) => 'Apply' ('Const' c)
 -- @
 -- 
--- While any @Semigroup c@ instance yields lawful @Apply (Const c)@ instance, large number of
--- them do not have @Bind@ instance compatible to @Apply@. One of few exceptional @Semigroup@
--- instance is ones isomorphic to @'First' c@ semigroup, whose semigroup operation is
--- "always use the left operand of @<>@."
+-- While any @Semigroup c@ instance yields a lawful @Apply (Const c)@ instance, large number of
+-- them do not have @Bind (Const c)@ instance compatible to @Apply@. One of few exceptional @Semigroup@
+-- instance is the one defined as below, which is isomorphic to @'First' c@ semigroup.
 --
 -- @
 -- (<>) :: c -> c -> c
