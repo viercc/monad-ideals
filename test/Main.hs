@@ -25,10 +25,12 @@ import Control.Monad.Coproduct
 putErr :: String -> IO ()
 putErr = hPutStrLn stderr
 
-(===) :: Eq a => a -> a -> String -> IO ()
+(===) :: (Show a, Eq a) => a -> a -> String -> IO ()
 (===) x y name = if x == y then pure () else putErr errMsg >> exitFailure
   where
-    errMsg = "failure: " ++ name
+    sx = show x
+    sy = show y
+    errMsg = "failure: " ++ name ++ "\n\t" ++ sx ++ " =/= " ++ sy
 
 infix 1 ===
 
@@ -125,7 +127,9 @@ injectMonad2 = hoistUnite inject2
 testsCoproduct :: IO ()
 testsCoproduct = do
   let abc = Multiple $ TwoOrMore 'a' 'b' ['c']
+      double x = Multiple $ TwoOrMore x x [] 
       quadruple x = Multiple $ TwoOrMore x x [x, x]
+      abc' = TwoOrMore 'a' 'b' ['c']
   item "Coproduct-inject1-inject1" $
     let m1 :: Unite (NotOne :+ NotOne) Char
         m1 = do
@@ -140,6 +144,7 @@ testsCoproduct = do
           injectMonad2 $ impure (quadruple x)
         m2 = injectMonad2 $ impure abc >>= impure . quadruple
     in m1 === m2
+  
   item "Coproduct-collapse" $
     let m1 :: Unite (NotOne :+ NotOne) Char
         m1 = do
@@ -148,4 +153,38 @@ testsCoproduct = do
           injectMonad2 $ if x == y then pure () else impure Zero
           pure y
         m2 = injectMonad1 $ impure abc
+    in m1 === m2
+  
+  item "Coproduct-eitherMonad" $
+    let m1 :: [Char]
+        m1 = either pure (eitherMonad toList toList) . runUnite $ do
+          x <- injectMonad1 $ impure abc
+          y <- if x == 'a' then injectMonad2 (impure abc) else injectMonad1 (impure abc)
+          if y == 'b' then injectMonad2 (impure (double y)) else pure y
+        m2 = "abbcabbcabbc"
+    in m1 === m2
+  
+  let f :: Char -> Ideal (TwoOrMore :+ TwoOrMore) Char
+      f 'a' = ideal . Right $ inject1 (TwoOrMore 'A' 'A' [])
+      f 'b' = ideal . Right $ inject2 (TwoOrMore 'B' 'B' [])
+      f c   = ideal . Left $ c
+  
+  item "Coproduct-idealBind" $
+    let m1 :: (TwoOrMore :+ TwoOrMore) Char
+        m1 = inject1 abc' `idealBind` f
+        
+        m2 :: (TwoOrMore :+ TwoOrMore) Char
+        m2 = Coproduct $ Left $ Mutual $
+          TwoOrMore
+            (Left 'A')
+            (Left 'A')
+            [
+              Right (Mutual $ TwoOrMore (Left 'B') (Left 'B') [])
+            , Left 'c'
+            ]
+    in m1 === m2
+  
+  item "Coproduct-||||" $
+    let m1 = id |||| id $ inject1 abc' `idealBind` f
+        m2 = TwoOrMore 'A' 'A' ['B', 'B', 'c']
     in m1 === m2
