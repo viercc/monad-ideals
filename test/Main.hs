@@ -12,15 +12,18 @@ import Data.Char (toUpper)
 import Data.Foldable (toList)
 import Data.Proxy
 import Data.Semigroup (Min(..))
+import Numeric.Natural (Natural)
 
 import Data.List.NonEmpty (NonEmpty(..))
-
 import Control.Monad.Isolated
 import Control.Monad.Ideal
 import Data.Functor.KeepLeft
 import Data.List.TwoOrMore
 import Data.List.NotOne
 import Control.Monad.Coproduct
+
+import Control.Comonad.Coideal
+import CoidealExample
 
 putErr :: String -> IO ()
 putErr = hPutStrLn stderr
@@ -45,7 +48,7 @@ main = do
   testsTwoOrMore
   testsNotOne
   testsCoproduct
-  --testsCoideal
+  testsCoideal
 
 testsIsolated :: IO ()
 testsIsolated = do
@@ -53,7 +56,7 @@ testsIsolated = do
   item "fmapUnite" $ fmap @(Unite []) succ (Unite (Left 1)) === Unite (Left 2)
   item "fmapUnite" $ fmap @(Unite []) succ (Unite (Right [1,1])) === Unite (Right [2,2])
   item "toListUnite" $ toList (Unite (Left 'a')) === ['a']
-  item "hoistUnite" $ hoistUnite toList (Unite (Left 'a')) === (Unite (Left 'a'))
+  item "hoistUnite" $ hoistUnite toList (Unite (Left 'a')) === Unite (Left 'a')
   item "hoistUnite" $ hoistUnite toList (Unite (Right Nothing)) === Unite (Right [])
 
   item "Isolated Proxy" $
@@ -188,3 +191,28 @@ testsCoproduct = do
     let m1 = id |||| id $ inject1 abc' `idealBind` f
         m2 = TwoOrMore 'A' 'A' ['B', 'B', 'c']
     in m1 === m2
+
+accumToProd :: Accum' x -> (A' :* A') x
+accumToProd = nextMultipleOf' 3 &&&& nextMultipleOf' 5
+
+s1 :: Accum' Natural
+(_, s1) = runCoideal $ toAccum' (Accum 1 id)
+
+testsCoideal :: IO ()
+testsCoideal = do
+  let 
+      w1, w2 :: (A' :* A') Natural
+      w1 = accumToProd s1
+      w2 = CoidealProduct (cons 2 path, path)
+        where
+          cons :: a -> Mutual (,) A' A' a -> Mutual (,) A' A' a
+          cons a as = Mutual $ Src' (a, as)
+          
+          nil :: Mutual (,) A' A' a
+          nil = Mutual Tgt'
+
+          infixr 4 `cons`
+
+          path :: Mutual (,) A' A' Natural
+          path = 4 `cons` 5 `cons` 9 `cons` 11 `cons` 14 `cons` nil
+  item "Coideal-&&&&" $ w1 === w2

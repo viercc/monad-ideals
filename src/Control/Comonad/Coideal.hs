@@ -1,6 +1,8 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Control.Comonad.Coideal
@@ -9,7 +11,6 @@
 --
 -- Maintainer  :  Koji Miyazato <viercc@gmail.com>
 -- Stability   :  experimental
--- Portability :  portable
 module Control.Comonad.Coideal
   ( -- * Coideal Comonads
     ComonadCoideal (..),
@@ -51,6 +52,17 @@ buildCoideal phi = Coideal . (id &&& phi)
 
 newtype (:*) w v a = CoidealProduct { runCoidealProduct :: (Mutual (,) w v a, Mutual (,) v w a) }
   deriving Functor
+
+deriving instance
+  (
+    Eq (m0 ((,) a (Mutual (,) n0 m0 a))),
+    Eq (n0 ((,) a (Mutual (,) m0 n0 a)))
+  ) => Eq ((:*) m0 n0 a)
+deriving instance
+  (
+    Show (m0 ((,) a (Mutual (,) n0 m0 a))),
+    Show (n0 ((,) a (Mutual (,) m0 n0 a)))
+  ) => Show ((:*) m0 n0 a)
 
 project1 :: (Functor w) => (w :* v) a -> w a
 project1 = fmap fst . runMutual . fst . runCoidealProduct

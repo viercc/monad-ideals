@@ -62,6 +62,8 @@ test-suite monad-ideals-test
     hs-source-dirs:   test
     main-is:        Main.hs
     other-modules:
+        CoidealExample
     build-depends:
         base,
+        comonad,
         monad-ideals
