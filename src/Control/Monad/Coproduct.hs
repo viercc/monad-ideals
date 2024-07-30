@@ -2,6 +2,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DeriveTraversable #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Control.Monad.Coproduct
@@ -28,6 +29,8 @@ import Control.Monad.Ideal
 import Control.Functor.Internal.Mutual (Mutual(..), foldMutual)
 
 import Data.Bifunctor (Bifunctor(..))
+import Data.Bitraversable (bitraverse)
+import Data.Bifoldable (bifoldMap)
 
 -- * Coproduct of Monads
 
@@ -84,6 +87,12 @@ deriving instance
     Show (m0 (Either a (Mutual Either n0 m0 a))),
     Show (n0 (Either a (Mutual Either m0 n0 a)))
   ) => Show ((:+) m0 n0 a)
+
+instance (Foldable m0, Foldable n0) => Foldable (m0 :+ n0) where
+  foldMap f = bifoldMap (foldMap f) (foldMap f) . runCoproduct
+
+instance (Traversable m0, Traversable n0) => Traversable (m0 :+ n0) where
+  traverse f = fmap Coproduct . bitraverse (traverse f) (traverse f) . runCoproduct
 
 inject1 :: (Functor m0) => m0 a -> (m0 :+ n0) a
 inject1 = Coproduct . Left . Mutual . fmap Left

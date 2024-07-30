@@ -13,6 +13,8 @@
 module Control.Functor.Internal.Mutual where
 
 import Data.Bifunctor
+import Data.Bifoldable
+import Data.Bitraversable
 
 newtype Mutual p m n a = Mutual {runMutual :: m (p a (Mutual p n m a))}
 
@@ -21,6 +23,12 @@ deriving instance (Show (m (p a (Mutual p n m a))), Show (n (p a (Mutual p m n a
 
 instance (Bifunctor p, Functor m, Functor n) => Functor (Mutual p m n) where
   fmap f = Mutual . fmap (bimap f (fmap f)) . runMutual
+
+instance (Bifoldable p, Foldable m, Foldable n) => Foldable (Mutual p m n) where
+  foldMap f = foldMap (bifoldMap f (foldMap f)) . runMutual
+
+instance (Bitraversable p, Traversable m, Traversable n) => Traversable (Mutual p m n) where
+  traverse f = fmap Mutual . traverse (bitraverse f (traverse f)) . runMutual
 
 foldMutual
   :: Bifunctor p

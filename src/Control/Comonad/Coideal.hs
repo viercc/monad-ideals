@@ -31,6 +31,8 @@ import Control.Arrow ((&&&))
 import Control.Comonad
 
 import Control.Functor.Internal.Mutual
+import Data.Bifoldable (bifoldMap)
+import Data.Bitraversable (bitraverse)
 
 newtype Coideal f a = Coideal { runCoideal :: (a, f a) }
   deriving (Functor, Foldable, Traversable)
@@ -63,6 +65,12 @@ deriving instance
     Show (m0 ((,) a (Mutual (,) n0 m0 a))),
     Show (n0 ((,) a (Mutual (,) m0 n0 a)))
   ) => Show ((:*) m0 n0 a)
+
+instance (Foldable m0, Foldable n0) => Foldable (m0 :* n0) where
+  foldMap f = bifoldMap (foldMap f) (foldMap f) . runCoidealProduct
+
+instance (Traversable m0, Traversable n0) => Traversable (m0 :* n0) where
+  traverse f = fmap CoidealProduct . bitraverse (traverse f) (traverse f) . runCoidealProduct
 
 project1 :: (Functor w) => (w :* v) a -> w a
 project1 = fmap fst . runMutual . fst . runCoidealProduct
